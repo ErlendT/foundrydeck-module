@@ -1,0 +1,33 @@
+name: Release Foundry Module
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Package Foundry Module
+        run: |
+          mkdir -p .tmp/foundrydeck
+          # Foundry modules expect the contents to be in a folder matching the module ID
+          rsync -a . .tmp/foundrydeck/ --exclude=.git --exclude=.tmp
+          cd .tmp
+          zip -r ../foundrydeck-module.zip foundrydeck/
+          cd ..
+          rm -rf .tmp
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: foundrydeck-module.zip
+          generate_release_notes: true
+          make_latest: true
