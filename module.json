@@ -1,0 +1,18 @@
+{
+  "id": "foundrydeck",
+  "title": "Foundry Deck (Bitfocus Companion Integration)",
+  "description": "Integration between Foundry VTT and Bitfocus Companion via HTTP REST requests.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "authors": [
+    {
+      "name": "Erlend"
+    }
+  ],
+  "esmodules": [
+    "scripts/module.js"
+  ]
+}
