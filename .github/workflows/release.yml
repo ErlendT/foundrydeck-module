@@ -15,11 +15,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Update module.json Version and Download URL
+        run: |
+          # Strip the 'v' from the tag name (e.g. v1.0.0 -> 1.0.0)
+          VERSION=${GITHUB_REF_NAME#v}
+          MANIFEST_URL="https://github.com/${{ github.repository }}/releases/latest/download/module.json"
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/foundrydeck-module.zip"
+          
+          # Inject new values into module.json using jq
+          jq --arg version "$VERSION" \
+             --arg manifest "$MANIFEST_URL" \
+             --arg download "$DOWNLOAD_URL" \
+             '.version = $version | .manifest = $manifest | .download = $download' \
+             module.json > module.template.json
+          mv module.template.json module.json
+
       - name: Package Foundry Module
         run: |
           mkdir -p .tmp/foundrydeck
           # Foundry modules expect the contents to be in a folder matching the module ID
-          rsync -a . .tmp/foundrydeck/ --exclude=.git --exclude=.tmp
+          rsync -a . .tmp/foundrydeck/ --exclude=.git --exclude=.tmp --exclude=.github
           cd .tmp
           zip -r ../foundrydeck-module.zip foundrydeck/
           cd ..
@@ -28,6 +43,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: foundrydeck-module.zip
+          files: |
+            foundrydeck-module.zip
+            module.json
           generate_release_notes: true
           make_latest: true
